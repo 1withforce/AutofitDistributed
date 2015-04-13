@@ -32,7 +32,7 @@ def get_app_md5(filename):
     md5fh.close()
     return md5
 APP_MD5 = get_app_md5(APP_NAME)
-APP_URL = "http://127.0.0.1/upload/"+APP_NAME
+APP_URL = "http://172.31.49.87/"+APP_NAME
 # Build apps with slowsquare-build-apps.sh
 
 def find_server():
@@ -76,6 +76,7 @@ class Distributor(asynchat.async_chat):
 
     def __init__(self, (host, port, key), name, jobData):
         # Connect to the server
+	print "Trying to connect to server",str(host),':',str(port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((host, port))
         asynchat.async_chat.__init__(self, sock=sock)
@@ -266,7 +267,7 @@ def runAutofit(jobData):
     Create an instance of the distributor and run it forever.
     """
     print "cwd: ", os.getcwd()
-    os.system('cp ../distserver.key ../modsquare.app.md5 ./') # Copy key from parent directory into current directory
+    os.system('cp ../distserver.key ../modsquare.app.md5 ../server.conf ./') # Copy key from parent directory into current directory
     getInfo(jobData, 'jobData')
     print "converting numpy ndarray to normal python list"
     jobData[5] = jobData[5].tolist()
