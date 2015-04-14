@@ -1,15 +1,14 @@
 #!/usr/bin/python
 #
-# slowsquare-app.py - Slowly square two numbers (Python version)
+# Triples fitter app; Derived from Autofit
 #
 
 import sys, os, time, tempfile
 import numpy 
-#from multiprocessing import Process
 import subprocess
-#import autofitBase as autofit
+
 def fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,file_num,A,B,C,DJ,DJK,DK,dJ,dK):
-    
+    """Taken from Autofit with slight modification"""
     all_combo_file = "all_combo_list%s.txt"%(str(file_num)) 
     
     all_combo_list_file  = open(all_combo_file,"a")
@@ -287,6 +286,10 @@ DJK =       jobData[10]
 DK =        jobData[11]
 dJ =        jobData[12]
 dK =        jobData[13]
+
+cmd = 'cp spfit spfit'+str(file_num)
+os.system(cmd)
+
 outfile = fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,file_num,A,B,C,DJ,DJK,DK,dJ,dK)
 # Note that NamedTemporaryFile automatically opens the file for us
 

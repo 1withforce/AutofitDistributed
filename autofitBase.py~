@@ -12,7 +12,6 @@ from collections import OrderedDict
 import shutil
 from scipy.interpolate import *
 
-#TODO get rid of these changelog comments since git is being used for version control now
 # CHANGELOG 1
 import autofitDist as autofitDistributor
 

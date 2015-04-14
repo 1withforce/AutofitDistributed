@@ -1,6 +1,5 @@
 #!/bin/bash 
-#rm ../upload/modsquare.app
-tar -czf ../upload/modsquare.app all
-./make_md5.sh ../upload/modsquare.app
+tar -czf ../upload/autofitDist.app all
+./make_md5.sh ../upload/autofitDist.app
 echo "Done"
 exit 0

@@ -1,15 +1,14 @@
 #!/usr/bin/python
 #
-# slowsquare-app.py - Slowly square two numbers (Python version)
+# Triples fitter app; Derived from Autofit
 #
 
 import sys, os, time, tempfile
 import numpy 
-#from multiprocessing import Process
 import subprocess
-#import autofitBase as autofit
+
 def fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,file_num,A,B,C,DJ,DJK,DK,dJ,dK):
-    
+    """Taken from Autofit with slight modification"""
     all_combo_file = "all_combo_list%s.txt"%(str(file_num)) 
     
     all_combo_list_file  = open(all_combo_file,"a")
@@ -260,15 +259,14 @@ if len(sys.argv) != 3:
 # Read the second input file (the first input file is the app)
 infile = sys.argv[2]
 fh = open(infile, 'r')
+
 # Read first line from infile, convert to list
 data = str(fh.readline())
-#print "======\nData : %s\n======"%(str(data))
+fh.close()
 exec("jobData = " + str(data)) # WARNING Dangerous!
-#print "Job data: %s"%(str(jobData))
-#fh.close()
+
 
 # Create output file
-#fh = tempfile.NamedTemporaryFile(prefix='temp-output-', dir='.', delete=False)
 
 list_a =    jobData[0][0]
 list_b =    jobData[0][1]
@@ -288,21 +286,13 @@ DK =        jobData[11]
 dJ =        jobData[12]
 dK =        jobData[13]
 
-cmd = 'cp spfit spfit'+str(file_num)
+cmd = 'cp spfit spfit'+str(file_num) # fit_triples uses individually named versions of spfit for some reason 
 os.system(cmd)
 
+# Outfile will be a string containing the name of the sorted fit triples file.
 outfile = fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,file_num,A,B,C,DJ,DJK,DK,dJ,dK)
-# Note that NamedTemporaryFile automatically opens the file for us
 
-# Update progress
-print "DISTCLIENT STATUS STARTING"
-
-#output = 'Data: %s'%(str(data))
-#print "DISTCLIENT STATUS %s"%(str(jobData))
 # We don't need the input file anymore
 os.unlink(infile)
 
-# Write a result to the output file and return it
-#fh.write(str(jobData))
-#fh.close()
 print "DISTCLIENT OUTPUT %s" % (outfile) 
