@@ -3,25 +3,23 @@
 # slowsquare.py - Example distributed computing distributor
 #
 """
-Example distributed computing distributor.
-modify to parse autofit data
+Distributed computing distributor 
+modified to parse autofit data
 """
+
+#TODO get some actual test data
 TESTDATA=[['fit 1', 'fit 2', 'fit 3'], 'other data', 'some more data']
+
 import asyncore, asynchat, socket, hashlib, urllib
 import json, random
 
-# dependent Autofit packages 
+# Dependent Autofit packages 
 import numpy
 
 # Debugging
 import os
 
-# URL of .tar.gz file named slowsquare.app that contains slowsquare-app.pl
-# as all/app.pl
-# tar --transform 's|.*|all/app.pl|S' -czf slowsquare.app slowsquare-app.pl
-#APP_NAME = "slowsquare.app"
-
-# Python version of app; see slowsquare-app.py
+# Python version of app; gzip compressed tar file created from the directory named '/all' 
 APP_NAME = "modsquare.app"
 
 # Compute MD5 and URL of chosen app
@@ -31,9 +29,12 @@ def get_app_md5(filename):
     md5 = md5fh.readline().strip()
     md5fh.close()
     return md5
+
 APP_MD5 = get_app_md5(APP_NAME)
-APP_URL = "http://127.0.0.1/upload/"+APP_NAME
-# Build apps with slowsquare-build-apps.sh
+APP_URL = "http://172.31.49.87/"+APP_NAME
+
+#FIXME make_app.sh currently depends on a certain file structure
+# Build apps with make_app.sh
 
 def find_server():
     """
@@ -76,6 +77,7 @@ class Distributor(asynchat.async_chat):
 
     def __init__(self, (host, port, key), name, jobData):
         # Connect to the server
+	print "Trying to connect to server",str(host),':',str(port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((host, port))
         asynchat.async_chat.__init__(self, sock=sock)
@@ -187,14 +189,15 @@ class Distributor(asynchat.async_chat):
         item_str = str(item) 
         item_md5 = hashlib.md5(item_str).hexdigest()
         item_url = "data:text/plain,%s" % (item_str)
+
         # Create object
         obj = {'id': name, 'duration': 20,
                'files': [[APP_MD5, APP_URL, "modsquare.app"],
                          [item_md5, item_url, "temp/%s" % (name)]],
                'upload': 'data:', 'worker': worker['id']}
-        # Send to worker
         
-        #print "Sending %s to %s as %s" % (item_str, worker['name'], name)
+        # Send to worker
+        print "Sending %s to %s" % (name, worker['name'])
         self.dispatch(obj)
 
     def finished_work(self, successful, obj):
@@ -238,27 +241,27 @@ class Distributor(asynchat.async_chat):
                     fh=open('sorted_final_out'+str(self.running[name][0][3])+'.txt', 'w')
                     fh.write(answer)
                     fh.close()
-                    print "Completed a workunit. %i unsent, %i still running"%(len(self.unsent), len(self.running))
+                    print "Completed a workunit. %i unsent, %i currently running"%(len(self.unsent), len(self.running))
             else:
                 raise WorkunitError, "Only data: file locations are supported"
           
         except WorkunitError:
-            #print "%s: %s Workunit Error" % (name, self.running[name])
             # Mark item in workunit as incomplete, resend it later
             self.unsent.append(self.running[name])
         # Remove completed workunit
         del(self.running[name])
 
 def getInfo(data, name='data'):
+    """Debugging function for checking data arrays"""
     i = 0
     print "Dumping contents of %s..."%(name)
     while i < len(data):
-        print "data[%i]:"%(i)
-        print "\ttype:",type(data[i]),"\n\tvalue:",
-        if type(data[i]) == list or type(data[i])==numpy.ndarray:
-            print data[i][:4],"..."
+        print "data[%i]:"%(i)                                                               # Index                              
+        print "\ttype:",type(data[i]),"\n\tvalue:",                                         # Type
+        if (type(data[i]) == list or type(data[i])==numpy.ndarray) and len(data[i]) > 5:    
+            print data[i][:4],"..."                                                         # First four elements if long list
         else:
-            print data[i]
+            print data[i]                                                                   # Every element otherwise
         i+=1
 
 def runAutofit(jobData):
@@ -266,7 +269,7 @@ def runAutofit(jobData):
     Create an instance of the distributor and run it forever.
     """
     print "cwd: ", os.getcwd()
-    os.system('cp ../distserver.key ../modsquare.app.md5 ./') # Copy key from parent directory into current directory
+    os.system('cp ../distserver.key ../modsquare.app.md5 ../server.conf ./')                # Copy key from parent directory into current directory
     getInfo(jobData, 'jobData')
     print "converting numpy ndarray to normal python list"
     jobData[5] = jobData[5].tolist()
