@@ -9,19 +9,19 @@ import sys		# Debuging
 # You can change these
 DEBUG = False
 REGION = "us-east-1"
-AMI_ID = "ami-882904e0"
-KEYNAME = "Autofit Key Pair"
-KEYFILENAME = "/home/aaron/Desktop/AutofitKeyPair.pem"
+AMI_ID = "ami-7cd0eb14"
+KEYNAME = "NCF_Autofit"
+KEYFILENAME = "/home/aaron/Desktop/NCF_Autofit.pem"
 INSTANCE_TYPE = "t2.micro"
-SECURITY_GROUP_IDS = ["sg-25e39441"]
+SECURITY_GROUP_IDS = ["sg-f43f7a90"]
 USERNAME = "ubuntu"
 NUMBER_OF_CLIENTS=2
 #TODO Add to config
 APP_LOCATION="~/local_webserver/html/upload/autofitDist.app"
 
 # Don't change these (unless you know what you're doing)
-CLIENT_PATH = "~/slowsquare_setup/"
-SERVER_PATH = CLIENT_PATH
+CLIENT_PATH = "~/client/"
+SERVER_PATH = "~/server/"
 
 def ask_config(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS):
 	"""Asks user if they'd like to change the default settings"""
@@ -188,7 +188,7 @@ def main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_ID
 		# Try to connect
             miko_client[i].connect(inst[i].ip_address, username=USERNAME, key_filename=KEYFILENAME)
         except:
-            if err_count < 10:
+            if err_count < 0:
                 err_count+=1
                 print "Encountered an error, trying again. Attempt #%i"%(err_count)
                 time.sleep(10)
