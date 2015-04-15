@@ -31,7 +31,7 @@ def get_app_md5(filename):
     return md5
 
 APP_MD5 = get_app_md5(APP_NAME)
-APP_URL = "http://172.31.49.87/"+APP_NAME
+
 
 #FIXME make_app.sh currently depends on a certain file structure
 # Build apps with make_app.sh
@@ -75,9 +75,9 @@ class Distributor(asynchat.async_chat):
     Implements the SlowSquare problem.
     """
 
-    def __init__(self, (host, port, key), name, jobData):
+    def __init__(self, (host, port, key), name, jobData, app_url):
         # Connect to the server
-	print "Trying to connect to server",str(host),':',str(port)
+        print "Trying to connect to server",str(host),':',str(port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((host, port))
         asynchat.async_chat.__init__(self, sock=sock)
@@ -88,6 +88,7 @@ class Distributor(asynchat.async_chat):
         self.index = 0      # Sequential workunit number
         self.unsent = []    # Work that we've generated but not sent
         self.running = {}   # Work that we've sent but not heard back about
+        self.app_url = app_url
 
         # Generate work
         xyzTransList = jobData[0]
@@ -190,9 +191,11 @@ class Distributor(asynchat.async_chat):
         item_md5 = hashlib.md5(item_str).hexdigest()
         item_url = "data:text/plain,%s" % (item_str)
 
+        print "app_url:",self.app_url
+
         # Create object
         obj = {'id': name, 'duration': 20,
-               'files': [[APP_MD5, APP_URL, "autofitDist.app"],
+               'files': [[APP_MD5, self.app_url, "autofitDist.app"],
                          [item_md5, item_url, "temp/%s" % (name)]],
                'upload': 'data:', 'worker': worker['id']}
         
@@ -264,17 +267,18 @@ def getInfo(data, name='data'):
             print data[i]                                                                   # Every element otherwise
         i+=1
 
-def runAutofit(jobData):
+def runAutofit(jobData, app_url):
     """
     Create an instance of the distributor and run it forever.
     """
-    #print "cwd: ", os.getcwd()                        # Debugging                                                              
+    server_app_url = app_url+APP_NAME
+    print "APP_URL: "+app_url                                                         
     os.system('cp ../distserver.key ../autofitDist.app.md5 ../server.conf ./')                # Copy key from parent directory into current directory
     getInfo(jobData, 'jobData')
     print "converting numpy ndarray to normal python list"
     jobData[5] = jobData[5].tolist()
     # Create instance of the distributor
-    Distributor(find_server(), "autofitDist", jobData)
+    Distributor(find_server(), "autofitDist", jobData, server_app_url)
     
     # Run it forever
     asyncore.loop()

@@ -12,13 +12,11 @@ from collections import OrderedDict
 import shutil
 from scipy.interpolate import *
 
-#TODO get rid of these changelog comments since git is being used for version control now
-# CHANGELOG 1
+# Distributor specific imports
 import autofitDist as autofitDistributor
+import time
 
-isDistributed = True
-segmentNum= 100
-# END 1
+
 """"
 Python Triples Fitter
 
@@ -1608,6 +1606,14 @@ def fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,fil
     os.system("sort -r 'final_output%s.txt'>sorted_final_out%s.txt"%(str(file_num),str(file_num)))#sorts output by score
     return "sorted_final_out%s.txt"%(str(file_num)) # Return output filename
     
+def write_serverConf(host="127.0.0.1", port=9933, servername="EC2", serverdetail="Default EC2 config", key="horospicywolf"):
+    "Write server details into the server.conf file"
+    conf_str = '{"host":"%s","port":%i,"servername":"%s","serverdetail":"%s"}'%(str(host),port,servername,serverdetail)
+    fh = open('server.conf','w')
+    fh.write(conf_str)
+    fh.close
+    pass
+    
 
 if __name__ == '__main__': #multiprocessing imports script as module
     
@@ -1622,13 +1628,42 @@ if __name__ == '__main__': #multiprocessing imports script as module
     DK = "0"
     dJ = "0"
     dK = "0"
-    # CHANGELOG 2
+    
+    # Get startup settings from user
+    # TODO make this part of the gui
+    user_in = 0
+    while(user_in != 'yes' and user_in != 'no'): 
+        if user_in:
+            print "Input not understood. Please type 'yes' or 'no'"
+        user_in = raw_input("Use distributed version? (yes/no): ")
+        user_in = user_in.lower()
+        if(user_in == 'yes'):
+            isDistributed = True
+        elif(user_in =='no'):
+            isDistributed = False
+        else:
+            pass        # Got undesired input            
+ 
     if isDistributed:
+        user_in = raw_input("Number of segments (default 100): ")
+        segmentNum=100
+        if user_in.isdigit() and int(user_in) > 0:
+            segmentNum=int(user_in)
         processors = segmentNum
         xyz_list = list()
+        user_in = raw_input("Enter the ip address of the distribution server: ")
+        #TODO Check validity of ip address
+        user_host = user_in.strip()
+        app_url = "http://"+user_host+"/"
+        user_in = raw_input("Enter the key of the distribution server (default horospicywolf): ")
+        if user_in != '':
+            write_serverConf(host = user_host, key=user_in)     # If user set new key, use it
+        else:
+            write_serverConf(host = user_host)                  # Else use default key
+         
     else:
         processors = 2
-    # END 2
+   
     #freq_high = float(18000.0)
     #freq_low = float(6000.0)
     inten_high = float('100000.0')
@@ -1943,7 +1978,10 @@ if __name__ == '__main__': #multiprocessing imports script as module
         # CHANGELOG 6
         if isDistributed:
             # Pass to distributor
-            autofitDistributor.runAutofit([xyzTransList, trans_1, trans_2, trans_3, top_peaks_3cut, peaklist, A, B, C, DJ, DJK, DK, dJ, dK])
+            startTime=time.time()
+            autofitDistributor.runAutofit([xyzTransList, trans_1, trans_2, trans_3, top_peaks_3cut, peaklist, A, B, C, DJ, DJK, DK, dJ, dK],app_url)
+            endTime=time.time()
+            print "Done.\nTook %f seconds to finish"%(endTime-startTime)
         else:
             for num in range(processors):
                 vars()["p%s"%str(num)].start()
