@@ -1968,14 +1968,14 @@ if __name__ == '__main__': #multiprocessing imports script as module
                 trans_x_peaks = trans_1_peaks
                 trans_y_peaks = trans_2_peaks
                 trans_z_peaks = trans_3_peaks[num]
-            # CHANGELOG 5
+       
             if isDistributed:
                 # Create a list of the trans peaks to pass to the distributor
                 xyzTransList.append((trans_x_peaks,trans_y_peaks,trans_z_peaks, num))
             else:
                 vars()["p%s"%str(num)] = Process(target=fit_triples, args=(trans_x_peaks,trans_y_peaks,trans_z_peaks,trans_1,trans_2,trans_3,top_peaks_3cut,peaklist,num,A,B,C,DJ,DJK,DK,dJ,dK))
-            # END 5
-        # CHANGELOG 6
+       
+       
         if isDistributed:
             # Pass to distributor
             startTime=time.time()
@@ -1983,11 +1983,14 @@ if __name__ == '__main__': #multiprocessing imports script as module
             endTime=time.time()
             print "Done.\nTook %f seconds to finish"%(endTime-startTime)
         else:
+            startTime=time.time()
             for num in range(processors):
                 vars()["p%s"%str(num)].start()
             for num in range(processors):
                 vars()["p%s"%str(num)].join()
-        # END 6        
+            endTime=time.time()
+            print "Done.\nTook %f seconds to finish"%(endTime-startTime)
+
         a = subprocess.Popen('cat sorted_final_out*.txt |sort -t "=" -k 4 -n > sorted_omc_cat.txt', shell=True)
         a.wait()
     

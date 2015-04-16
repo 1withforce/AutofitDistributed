@@ -9,13 +9,15 @@ import sys		# Debuging
 # You can change these
 DEBUG = False
 REGION = "us-east-1"
-AMI_ID = "ami-7cd0eb14"
+SERVER_AMI_ID = "ami-7cd0eb14"
+CLIENT_AMI_ID = SERVER_AMI_ID
 KEYNAME = "NCF_Autofit"
 KEYFILENAME = "/home/aaron/Desktop/NCF_Autofit.pem"
-INSTANCE_TYPE = "t2.micro"
+SERVER_INSTANCE_TYPE = "t2.small"
+CLIENT_INSTANCE_TYPE = "c4.large"
 SECURITY_GROUP_IDS = ["sg-f43f7a90"]
 USERNAME = "ubuntu"
-NUMBER_OF_CLIENTS=2
+NUMBER_OF_CLIENTS=5
 #TODO Add to config
 APP_LOCATION="~/local_webserver/html/upload/autofitDist.app"
 
@@ -23,7 +25,7 @@ APP_LOCATION="~/local_webserver/html/upload/autofitDist.app"
 CLIENT_PATH = "~/client/"
 SERVER_PATH = "~/server/"
 
-def ask_config(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS):
+def ask_config(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS):
 	"""Asks user if they'd like to change the default settings"""
 	print "DEBUG: %s"%(DEBUG)
 	ans=False
@@ -33,14 +35,14 @@ def ask_config(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GR
 		ans=raw_input("Use default settings? (yes/no): ")
 		ans=ans.lower()
 	if ans == 'yes':
-		main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
+		main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
 	elif ans == 'no':
-		run_cfg(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
+		run_cfg(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
 	else:
 		print "Unexpected line execution"
 		raise RuntimeError
 
-def run_cfg(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS):
+def run_cfg(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS):
 	"""Set connection variables"""
 	msg = "%s is currently set to %s.\nLeave blank to keep old value or else type in a new value: "
 	# DEBUG
@@ -66,12 +68,18 @@ def run_cfg(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP
 		pass
 	else:
 		REGION = user_in
-	# AMI_ID
-	user_in = raw_input(msg%("AMI_ID", AMI_ID))
+	# SERVER_AMI_ID
+	user_in = raw_input(msg%("SERVER_AMI_ID", SERVER_AMI_ID))
 	if user_in == "":
 		pass
 	else:
-		AMI_ID = user_in
+		SERVER_AMI_ID = user_in
+	# CLIENT_AMI_ID
+	user_in = raw_input(msg%("CLIENT_AMI_ID", SERVER_AMI_ID))
+	if user_in == "":
+		pass
+	else:
+		CLIENT_AMI_ID = user_in
 	# KEYNAME
 	user_in = raw_input(msg%("KEYNAME", KEYNAME))
 	if user_in == "":
@@ -84,12 +92,18 @@ def run_cfg(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP
 		pass
 	else:
 		KEYFILENAME = user_in
-	# INSTANCE_TYPE
-	user_in = raw_input(msg%("INSTANCE_TYPE", INSTANCE_TYPE))
+	# SERVER_INSTANCE_TYPE
+	user_in = raw_input(msg%("SERVER_INSTANCE_TYPE", SERVER_INSTANCE_TYPE))
 	if user_in == "":
 		pass
 	else:
-		INSTANCE_TYPE = user_in
+		SERVER_INSTANCE_TYPE = user_in
+	# CLIENT_INSTANCE_TYPE
+	user_in = raw_input(msg%("CLIENT_INSTANCE_TYPE", CLIENT_INSTANCE_TYPE))
+	if user_in == "":
+		pass
+	else:
+		SERVER_INSTANCE_TYPE = user_in
 	# SECURITY_GROUP_IDS
 	user_in = raw_input(msg%("SECURITY_GROUP_IDS", SECURITY_GROUP_IDS))
 	if user_in == "":
@@ -116,8 +130,8 @@ def run_cfg(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP
 			NUMBER_OF_CLIENTS = int(user_in)
 
 	# Confirmation
-	settings="DEBUG: %s\nREGION: %s\nAMI_ID: %s\nKEYNAME: %s\nKEYFILENAME: %s\nINSTANCE_TYPE: %s\nSECURITY_GROUP_IDS: %s\nUSERNAME: %s\nNUMBER_OF_CLIENTS: %s"
-	print "Current settings are:\n",settings%(str(DEBUG),REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,str(SECURITY_GROUP_IDS),USERNAME, str(NUMBER_OF_CLIENTS))
+	settings="DEBUG: %s\nREGION: %s\nSERVER_AMI_ID: %s\nCLIENT_AMI_ID: %s\nKEYNAME: %s\nKEYFILENAME: %s\nSERVER_INSTANCE_TYPE: %s\nCLIENT_INSTANCE_TYPE: %s\nSECURITY_GROUP_IDS: %s\nUSERNAME: %s\nNUMBER_OF_CLIENTS: %s"
+	print "Current settings are:\n",settings%(str(DEBUG),REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,str(SECURITY_GROUP_IDS),USERNAME, str(NUMBER_OF_CLIENTS))
 	user_in=False
 	while(user_in!= 'yes' and user_in != 'no'):
 		if user_in:
@@ -125,28 +139,38 @@ def run_cfg(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP
 		user_in = raw_input("Are these settings correct?(yes/no)")
 		user_in = user_in.lower()
 	if user_in == 'yes':
-		main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
+		main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
 	elif user_in == 'no':
 		print "Re-running config dialogue...\n"
-		return run_cfg(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
+		return run_cfg(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
 	else: 
 		print "Unexpected line execution"
 		raise RuntimeError
 
 
-def main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS):
+def main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS):
 	# Create instance
 	# Can sometimes crash from random bad connection, should retry
-    boto_client = boto.ec2.connect_to_region(REGION)	# Region
-    reservation = boto_client.run_instances(AMI_ID,		# Ami image ID
-    min_count = NUMBER_OF_CLIENTS+1,				# Launch specific number of instances.
-    max_count = NUMBER_OF_CLIENTS+1,				# +1 for the server
-    key_name = KEYNAME,							# key name
-    instance_type = INSTANCE_TYPE,					# Type of instance
-    security_group_ids = SECURITY_GROUP_IDS)		# List of secutity group ID(s)
+
+    boto_client = boto.ec2.connect_to_region(REGION)	        # Region
+    # Server
+    serverReservation = boto_client.run_instances(SERVER_AMI_ID,# Ami image ID
+    min_count = 1,				                                # Launch specific number of instances.
+    max_count = 1,				                                # 1 for the server
+    key_name = KEYNAME,							                # key name
+    instance_type = SERVER_INSTANCE_TYPE,					    # Type of instance
+    security_group_ids = SECURITY_GROUP_IDS)		            # List of secutity group ID(s)
+    # Client
+    clientReservation = boto_client.run_instances(CLIENT_AMI_ID,# Ami image ID
+    min_count = NUMBER_OF_CLIENTS,				                # Launch specific number of instances.
+    max_count = NUMBER_OF_CLIENTS,				                
+    key_name = KEYNAME,							                # key name
+    instance_type = CLIENT_INSTANCE_TYPE,                       # Type of instance
+    security_group_ids = SECURITY_GROUP_IDS)                    # List of secutity group ID(s)
+
     distserver_key = "horospicywolf"
     print "Waiting for instances to start"
-    inst = reservation.instances
+    inst = list(serverReservation.instances+clientReservation.instances)
 	# Wait for our instance to start running
     pending = list(inst)
     while len(pending) > 0:
@@ -155,7 +179,7 @@ def main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_ID
                 print "Instance Running: %s@%s"%(USERNAME,n.ip_address)
                 pending.remove(n)
                 break
-        time.sleep(2)
+        time.sleep(1)
     print "All instances running. Server at %s"%(inst[0].ip_address)
 	# SSH Setup
     miko_client = []
@@ -177,7 +201,7 @@ def main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_ID
     print "Allowing connection to process (takes ~40 seconds, may vary for different instance types)"
     time.sleep(40)
 
-    i=0
+    i = 0
     err_count=0
     server_conf='{"host":"'+str(inst[0].ip_address)+'","port":9933,"servername":"MicroUbuntu","serverdetail":"UbuntuMicro instance on amazon cloud"}'
 
@@ -188,7 +212,7 @@ def main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_ID
 		# Try to connect
             miko_client[i].connect(inst[i].ip_address, username=USERNAME, key_filename=KEYFILENAME)
         except:
-            if err_count < 0:
+            if err_count < 10:
                 err_count+=1
                 print "Encountered an error, trying again. Attempt #%i"%(err_count)
                 time.sleep(10)
@@ -236,4 +260,4 @@ def main(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_ID
     print "Connections closed"
 
 if __name__ == '__main__':
-    ask_config(DEBUG,REGION,AMI_ID,KEYNAME,KEYFILENAME,INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
+    ask_config(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)

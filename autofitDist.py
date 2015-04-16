@@ -191,8 +191,6 @@ class Distributor(asynchat.async_chat):
         item_md5 = hashlib.md5(item_str).hexdigest()
         item_url = "data:text/plain,%s" % (item_str)
 
-        print "app_url:",self.app_url
-
         # Create object
         obj = {'id': name, 'duration': 20,
                'files': [[APP_MD5, self.app_url, "autofitDist.app"],
