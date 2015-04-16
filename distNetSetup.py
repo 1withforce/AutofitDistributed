@@ -103,7 +103,7 @@ def run_cfg(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_
 	if user_in == "":
 		pass
 	else:
-		SERVER_INSTANCE_TYPE = user_in
+		CLIENT_INSTANCE_TYPE = user_in
 	# SECURITY_GROUP_IDS
 	user_in = raw_input(msg%("SECURITY_GROUP_IDS", SECURITY_GROUP_IDS))
 	if user_in == "":
@@ -161,12 +161,17 @@ def main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INS
     instance_type = SERVER_INSTANCE_TYPE,					    # Type of instance
     security_group_ids = SECURITY_GROUP_IDS)		            # List of secutity group ID(s)
     # Client
-    clientReservation = boto_client.run_instances(CLIENT_AMI_ID,# Ami image ID
-    min_count = NUMBER_OF_CLIENTS,				                # Launch specific number of instances.
-    max_count = NUMBER_OF_CLIENTS,				                
-    key_name = KEYNAME,							                # key name
-    instance_type = CLIENT_INSTANCE_TYPE,                       # Type of instance
-    security_group_ids = SECURITY_GROUP_IDS)                    # List of secutity group ID(s)
+    try:
+        clientReservation = boto_client.run_instances(CLIENT_AMI_ID,# Ami image ID
+        min_count = NUMBER_OF_CLIENTS,				                # Launch specific number of instances.
+        max_count = NUMBER_OF_CLIENTS,				                
+        key_name = KEYNAME,							                # key name
+        instance_type = CLIENT_INSTANCE_TYPE,                       # Type of instance
+        security_group_ids = SECURITY_GROUP_IDS)                    # List of secutity group ID(s)
+    except:
+        print "Could not make request for clients. Closing server connection..."
+        boto_client.terminate_instances(serverReservation.instances[0].id)
+        raise
 
     distserver_key = "horospicywolf"
     print "Waiting for instances to start"
