@@ -6,6 +6,7 @@ import paramiko     # To ssh to the cloud in a purely python way
 import os		# Debuging
 import sys		# Debuging
 
+#TODO read and write to a config file
 # You can change these
 DEBUG = False
 REGION = "us-east-1"
@@ -13,13 +14,12 @@ SERVER_AMI_ID = "ami-7cd0eb14"
 CLIENT_AMI_ID = SERVER_AMI_ID
 KEYNAME = "NCF_Autofit"
 KEYFILENAME = "/home/aaron/Desktop/NCF_Autofit.pem"
-SERVER_INSTANCE_TYPE = "t2.small"
-CLIENT_INSTANCE_TYPE = "c4.large"
+SERVER_INSTANCE_TYPE = "t2.micro"
+CLIENT_INSTANCE_TYPE = "t2.micro"
 SECURITY_GROUP_IDS = ["sg-f43f7a90"]
 USERNAME = "ubuntu"
-NUMBER_OF_CLIENTS=5
-#TODO Add to config
-APP_LOCATION="~/local_webserver/html/upload/autofitDist.app"
+NUMBER_OF_CLIENTS=1
+APP_LOCATION="~/local_webserver/html/upload/autofitDist.app"    #TODO Add to config dialogue
 
 # Don't change these (unless you know what you're doing)
 CLIENT_PATH = "~/client/"
@@ -132,17 +132,22 @@ def run_cfg(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_
 	# Confirmation
 	settings="DEBUG: %s\nREGION: %s\nSERVER_AMI_ID: %s\nCLIENT_AMI_ID: %s\nKEYNAME: %s\nKEYFILENAME: %s\nSERVER_INSTANCE_TYPE: %s\nCLIENT_INSTANCE_TYPE: %s\nSECURITY_GROUP_IDS: %s\nUSERNAME: %s\nNUMBER_OF_CLIENTS: %s"
 	print "Current settings are:\n",settings%(str(DEBUG),REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,str(SECURITY_GROUP_IDS),USERNAME, str(NUMBER_OF_CLIENTS))
+
 	user_in=False
+
 	while(user_in!= 'yes' and user_in != 'no'):
 		if user_in:
 			print "Please type 'yes' or 'no'" 
 		user_in = raw_input("Are these settings correct?(yes/no)")
 		user_in = user_in.lower()
+
 	if user_in == 'yes':
 		main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
+
 	elif user_in == 'no':
 		print "Re-running config dialogue...\n"
 		return run_cfg(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INSTANCE_TYPE,CLIENT_INSTANCE_TYPE,SECURITY_GROUP_IDS, USERNAME,NUMBER_OF_CLIENTS)
+
 	else: 
 		print "Unexpected line execution"
 		raise RuntimeError
@@ -178,19 +183,22 @@ def main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INS
     inst = list(serverReservation.instances+clientReservation.instances)
 	# Wait for our instance to start running
     pending = list(inst)
+    time.sleep(1) # Sometimes run into error making an update request before the request has been processed
     while len(pending) > 0:
         for n in pending:
             if n.update() == 'running':
                 print "Instance Running: %s@%s"%(USERNAME,n.ip_address)
                 pending.remove(n)
                 break
-        time.sleep(1)
+        time.sleep(0.25)
     print "All instances running. Server at %s"%(inst[0].ip_address)
-	# SSH Setup
+	
+    # SSH Setup
     miko_client = []
     for i in range(len(inst)):
         miko_client.append(paramiko.client.SSHClient())
         miko_client[i].set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
     # Debug
     if DEBUG:
         print "DEBUG variable info:\ncwd:"
@@ -225,7 +233,7 @@ def main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INS
 
             else:
                 print "Encountered too many errors. Closing connection to %s@%s\nError message:%s\n"%(USERNAME,inst[i].ip_address,sys.exc_info()[0])
-                miko_client[i].close()
+                #miko_client[i].close()
                 boto_client.terminate_instances(instance_ids=[inst[i].id])
                 print "Connections closed"
                 raise
@@ -256,7 +264,39 @@ def main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INS
     print "\n================================"
     print "Your server is at: %s\nKey: %s"%(str(inst[0].ip_address), distserver_key)
     print "================================\n"
-    raw_input("Press Enter to close connections")
+    closeUp=False
+    helpInfo = \
+    """
+    ======================================================
+    Options:
+    wipe --wipes the data from each client
+    exit --close out all connections (terminate instances)
+    help --prints this dialogue
+    ====================================================== 
+    """
+    err_count = 0
+    user_in = None
+    while(user_in != 'exit'):
+        user_in=raw_input("Command: ")
+        if user_in == 'wipe':   #FIXME Currently breaks clients
+            i=1
+            while(i<len(inst)): #TODO rewrite to avoid code duplication
+                transport = miko_client[i].get_transport()
+                channel = transport.open_session()
+                print "Deleting tmp files of %s..."%(inst[i].ip_address)
+                cmd = "rm -r /tmp/distclient-temp*"                                     # Remove client folders
+                channel.exec_command(cmd)	                                            # Run command
+                channel.close()					                                        
+                i+=1
+
+        elif user_in == 'exit':
+            pass
+        elif user_in == 'help':
+            print helpInfo
+        else:
+            print "Input not understood\n",helpInfo
+    
+    
     # Close up
     inst_ids=[]
     for n in inst:
