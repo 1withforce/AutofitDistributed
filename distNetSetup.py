@@ -13,13 +13,13 @@ REGION = "us-east-1"
 SERVER_AMI_ID = "ami-7cd0eb14"
 CLIENT_AMI_ID = SERVER_AMI_ID
 KEYNAME = "NCF_Autofit"
-KEYFILENAME = "/home/aaron/Desktop/NCF_Autofit.pem"
+KEYFILENAME = "/home/aolinger/Desktop/NCF_Autofit.pem"
 SERVER_INSTANCE_TYPE = "t2.micro"
 CLIENT_INSTANCE_TYPE = "t2.micro"
 SECURITY_GROUP_IDS = ["sg-f43f7a90"]
 USERNAME = "ubuntu"
 NUMBER_OF_CLIENTS=1
-APP_LOCATION="~/local_webserver/html/upload/autofitDist.app"    #TODO Add to config dialogue
+APP_LOCATION="../upload/autofitDist.app"    #TODO Add to config dialogue
 
 # Don't change these (unless you know what you're doing)
 CLIENT_PATH = "~/client/"
@@ -244,8 +244,8 @@ def main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INS
             # Instance at index 0 is always the server
             if i == 0:
                 print "Creating server at %s..."%(inst[i].ip_address)
-                cmd = "scp -i %s %s %s@%s:~/webserver/htdocs/"%(KEYFILENAME,APP_LOCATION, USERNAME, inst[i].ip_address) #FIXME better way of doing this using boto
-                os.system(cmd)                                                              # Copy app FIXME Linux only
+                #cmd = "scp -i %s %s %s@%s:~/webserver/htdocs/"%(KEYFILENAME,APP_LOCATION, USERNAME, inst[i].ip_address) #FIXME better way of doing this using boto
+                #os.system(cmd)                                                              # Copy app FIXME Linux only
                 init_server = "sudo ~/webserver/bin/httpd"                               # Start webserver
                 init_server += "\ncd "+SERVER_PATH			                                # Get into the correct directory	
                 init_server += "\necho "+distserver_key+" > distserver.key"                 # Write key

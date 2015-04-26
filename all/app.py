@@ -253,7 +253,7 @@ def fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,fil
     return "sorted_final_out%s.txt"%(str(file_num)) # Return output filename
 
 if len(sys.argv) != 3:
-    print "Usage: app.py something.app input-file"
+    print "Usage: app.py something.app input-file1 input-file2"
     sys.exit(1)
 
 # Read the second input file (the first input file is the app)
@@ -264,7 +264,7 @@ fh = open(infile, 'r')
 data = str(fh.readline())
 fh.close()
 exec("jobData = " + str(data)) # WARNING Dangerous!
-
+peaklist=numpy.load('peaklist.npy')
 
 # Create output file
 
@@ -275,16 +275,16 @@ trans_1 =   jobData[1]
 trans_2 =   jobData[2]
 trans_3 =   jobData[3]
 top_17 =    jobData[4]
-peaklist =  numpy.array(jobData[5])
+#peaklist =  numpy.array(jobData[5])
 file_num = jobData[0][3] # Actually partitiion number
-A =         jobData[6]
-B =         jobData[7]
-C =         jobData[8]
-DJ =        jobData[9]
-DJK =       jobData[10]
-DK =        jobData[11]
-dJ =        jobData[12]
-dK =        jobData[13]
+A =         jobData[5]
+B =         jobData[6]
+C =         jobData[7]
+DJ =        jobData[8]
+DJK =       jobData[9]
+DK =        jobData[10]
+dJ =        jobData[11]
+dK =        jobData[12]
 
 cmd = 'cp spfit spfit'+str(file_num) # fit_triples uses individually named versions of spfit for some reason 
 os.system(cmd)

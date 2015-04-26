@@ -28,10 +28,11 @@ def get_app_md5(filename):
     md5fh = open(filename + ".md5", 'r')
     md5 = md5fh.readline().strip()
     md5fh.close()
+    print "md5:",md5
     return md5
 
-APP_MD5 = get_app_md5(APP_NAME)
-
+#APP_MD5 = get_app_md5(APP_NAME)
+APP_MD5 = None # Defined when runAutofit called
 
 #FIXME make_app.sh currently depends on a certain file structure
 # Build apps with make_app.sh
@@ -190,11 +191,15 @@ class Distributor(asynchat.async_chat):
         item_str = str(item) 
         item_md5 = hashlib.md5(item_str).hexdigest()
         item_url = "data:text/plain,%s" % (item_str)
+	
+	#testdoc=open('testdoc.txt', 'w')
+	#testdoc.close()
+	#os.system('scp -i ~/Desktop/NCF_autofit.pem ./testdoc.txt ubuntu@%s')	
 
         # Create object
         obj = {'id': name, 'duration': 20,
-               'files': [[APP_MD5, self.app_url, "autofitDist.app"],
-                         [item_md5, item_url, "temp/%s" % (name)]],
+               'files': [[APP_MD5, self.app_url, "autofitDist.app"],	
+			 [item_md5, item_url, "temp/%s" % (name)]],                  
                'upload': 'data:', 'worker': worker['id']}
         
         # Send to worker
@@ -270,11 +275,15 @@ def runAutofit(jobData, app_url):
     Create an instance of the distributor and run it forever.
     """
     server_app_url = app_url+APP_NAME
+    numpy.save("../all/peaklist.npy", jobData.pop(5))
+    os.system("../make_app.sh ../")
+    os.system("scp -i ~/Desktop/NCF_Autofit.pem ../upload/autofitDist.app ubuntu@%s:~/webserver/htdocs/"%(app_url[7:-1]))
     print "APP_URL: "+app_url                                                         
     os.system('cp ../distserver.key ../autofitDist.app.md5 ../server.conf ./')                # Copy key from parent directory into current directory
-    getInfo(jobData, 'jobData')
-    print "converting numpy ndarray to normal python list"
-    jobData[5] = jobData[5].tolist()
+    APP_MD5 = get_app_md5(APP_NAME)
+    #getInfo(jobData, 'jobData')
+    #print "converting numpy ndarray to normal python list"
+    #jobData[5] = jobData[5].tolist()
     # Create instance of the distributor
     Distributor(find_server(), "autofitDist", jobData, server_app_url)
     
