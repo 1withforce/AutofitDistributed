@@ -198,7 +198,7 @@ class Distributor(asynchat.async_chat):
 
         # Create object
         obj = {'id': name, 'duration': 20,
-               'files': [[APP_MD5, self.app_url, "autofitDist.app"],	
+               'files': [[get_app_md5(APP_NAME), self.app_url, "autofitDist.app"],	
 			 [item_md5, item_url, "temp/%s" % (name)]],                  
                'upload': 'data:', 'worker': worker['id']}
         
@@ -276,11 +276,11 @@ def runAutofit(jobData, app_url):
     """
     server_app_url = app_url+APP_NAME
     numpy.save("../all/peaklist.npy", jobData.pop(5))
-    os.system("../make_app.sh ../")
+    os.system("sudo ../make_app.sh ../")
     os.system("scp -i ~/Desktop/NCF_Autofit.pem ../upload/autofitDist.app ubuntu@%s:~/webserver/htdocs/"%(app_url[7:-1]))
     print "APP_URL: "+app_url                                                         
     os.system('cp ../distserver.key ../autofitDist.app.md5 ../server.conf ./')                # Copy key from parent directory into current directory
-    APP_MD5 = get_app_md5(APP_NAME)
+    #APP_MD5 = get_app_md5(APP_NAME)
     #getInfo(jobData, 'jobData')
     #print "converting numpy ndarray to normal python list"
     #jobData[5] = jobData[5].tolist()
