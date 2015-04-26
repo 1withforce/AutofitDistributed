@@ -197,7 +197,7 @@ class Distributor(asynchat.async_chat):
 	#os.system('scp -i ~/Desktop/NCF_autofit.pem ./testdoc.txt ubuntu@%s')	
 
         # Create object
-        obj = {'id': name, 'duration': 20,
+        obj = {'id': name, 'duration': 300,
                'files': [[get_app_md5(APP_NAME), self.app_url, "autofitDist.app"],	
 			 [item_md5, item_url, "temp/%s" % (name)]],                  
                'upload': 'data:', 'worker': worker['id']}
