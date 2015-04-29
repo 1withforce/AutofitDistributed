@@ -279,13 +279,9 @@ def runAutofit(jobData, app_url):
     os.system("sudo ../make_app.sh ../")
     os.system("scp -i ~/Desktop/NCF_Autofit.pem ../upload/autofitDist.app ubuntu@%s:~/webserver/htdocs/"%(app_url[7:-1]))
     print "APP_URL: "+app_url                                                         
-<<<<<<< HEAD
     os.system('cp ../distserver.key ../server.conf ./')                # Copy key from parent directory into current directory
-=======
->>>>>>> 2c695381f392686a3d5e7c38671f4203fb0305e8
     #getInfo(jobData, 'jobData')
-    #print "converting numpy ndarray to normal python list"
-    #jobData[5] = jobData[5].tolist()
+
     # Create instance of the distributor
     Distributor(find_server(), "autofitDist", jobData, server_app_url)
     
