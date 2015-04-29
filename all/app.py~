@@ -294,6 +294,5 @@ outfile = fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peakli
 
 # We don't need the input file anymore
 os.unlink(infile)
-os.unlink('peaklist.npy')
 
 print "DISTCLIENT OUTPUT %s" % (outfile) 

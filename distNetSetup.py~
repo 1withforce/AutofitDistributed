@@ -284,7 +284,7 @@ def main(DEBUG,REGION,SERVER_AMI_ID,CLIENT_AMI_ID,KEYNAME,KEYFILENAME,SERVER_INS
                 transport = miko_client[i].get_transport()
                 channel = transport.open_session()
                 print "Deleting tmp files of %s..."%(inst[i].ip_address)
-                cmd = "rm /tmp/distclient-temp*/* /tmp/distclient-temp*/temp/*"	            # Remove client files
+                cmd = "rm /tmp/distclient-temp*/*"                                     # Remove client folders
                 channel.exec_command(cmd)	                                            # Run command
                 channel.close()					                                        
                 i+=1
