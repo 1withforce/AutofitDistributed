@@ -244,8 +244,8 @@ class Distributor(asynchat.async_chat):
                     print "!! Problem with opening url\n"
                     raise WorkunitError, "Failed to decode data: URL"
                 finally:
-                    # Display the result
-                    print "%s:\n%s" % (name, answer)
+                    # Display the result (disabled for speed)
+                    #print "%s:\n%s" % (name, answer)
                     fh=open('sorted_final_out'+str(self.running[name][0][3])+'.txt', 'w')
                     fh.write(answer)
                     fh.close()
