@@ -1978,10 +1978,11 @@ if __name__ == '__main__': #multiprocessing imports script as module
        
         if isDistributed:
             # Pass to distributor
-            startTime=time.time()
+	    # Start and end times for distributed route now computed from within autofitDist
+            #startTime=time.time()
             autofitDistributor.runAutofit([xyzTransList, trans_1, trans_2, trans_3, top_peaks_3cut, peaklist, A, B, C, DJ, DJK, DK, dJ, dK],app_url)
-            endTime=time.time()
-            print "Done.\nTook %f seconds to finish"%(endTime-startTime)
+            #endTime=time.time()
+            #print "Done.\nTook %f seconds to finish"%(endTime-startTime)
         else:
             startTime=time.time()
             for num in range(processors):

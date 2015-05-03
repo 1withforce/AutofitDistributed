@@ -17,7 +17,7 @@ import json, random
 import numpy
 
 # Debugging
-import os
+import os, time
 
 # Python version of app; gzip compressed tar file created from the directory named '/all' 
 APP_NAME = "autofitDist.app"
@@ -90,6 +90,7 @@ class Distributor(asynchat.async_chat):
         self.unsent = []    # Work that we've generated but not sent
         self.running = {}   # Work that we've sent but not heard back about
         self.app_url = app_url
+	self.startTime = time.time()
 
         # Generate work
         xyzTransList = jobData[0]
@@ -161,6 +162,7 @@ class Distributor(asynchat.async_chat):
         if len(self.unsent) > 0:
             self.request_worker()   # Request more work
         elif len(self.running) == 0:
+	    print "Done.\nTook %f seconds to finish"%(time.time()-self.startTime)
             self.close_when_done()  # All work finished; Close out program
         else:
             pass                    # Wait for work to complete
