@@ -1,0 +1,70 @@
+# Example of a simple implementation of the Amazon EC2 API Boto
+# See distNetSetup.py for a more advanced implementation
+
+# Keys stored in ~/.boto
+import boto.ec2	# To connect to the cloud
+import time	# To impose delays for startup
+import paramiko # To ssh to the cloud in a purely python way
+import os 	# Debuging
+import sys 	# Debuging
+
+DEBUG = False
+REGION = "us-east-1"
+AMI_ID = "ami-f896b190"			#<--- You will need to change these lines
+KEYNAME = "Key Pair"			#<---
+KEYFILENAME = "~/Desktop/KeyPair.pem" 	#<---
+INSTANCE_TYPE = "t2.micro"
+SECURITY_GROUP_IDS = ["sg-25e39441"]	#<--- 
+USERNAME = "ubuntu"
+
+# Create instance
+boto_client = boto.ec2.connect_to_region(REGION)	# Region
+reservation = boto_client.run_instances(AMI_ID,		# Ami image ID
+key_name = KEYNAME,					# key name
+instance_type = INSTANCE_TYPE,				# Type of instance
+security_group_ids = SECURITY_GROUP_IDS) 		# List of secutity group ID(s)
+print "Waiting for instance to start"
+
+inst = reservation.instances[0]
+# Wait for our instance to start running
+while inst.update() != 'running':
+	time.sleep(2)
+
+print "Instance Running: %s@%s"%(USERNAME,inst.ip_address)
+# SSH to instance
+miko_client = paramiko.client.SSHClient()
+miko_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+# Debug
+if DEBUG:
+	print "DEBUG variable info:\ncwd:"
+	time.sleep(1)
+	os.system('pwd')
+	print "ip address:", str(inst.ip_address)
+	print "username: ", USERNAME
+	print "KEYFILENAME: ", KEYFILENAME
+
+#!! must wait for a time for connection to "firm up" or else you will get:
+# "socket.error: [Errno 111] Connection refused"
+# 25 seconds is not long enough, 30 seconds sometimes works, 40 seconds seems to work every time
+print "Allowing connection to process (takes ~40 seconds, may vary for different instance types)"
+time.sleep(40)
+try:
+	# Try to connect
+	miko_client.connect(inst.ip_address, username=USERNAME, key_filename=KEYFILENAME)
+except:
+	print "Encountered an error. Closing connection to %s@%s\nError message:%s\n"%(USERNAME,inst.ip_address,sys.exc_info()[0])
+	miko_client.close()
+	boto_client.terminate_instances(instance_ids=[inst.id])
+	print "Connections closed"
+	raise
+print "Connection established!"
+# Do a command	 
+(sshin, sshout, ssherr) = miko_client.exec_command('cowsay moo') 	# Standard in, out, and error. See python docs
+for line in sshout.readlines():
+	print line,
+# Close up
+print "Closing connection to %s@%s"%(USERNAME,inst.ip_address)
+miko_client.close()
+boto_client.terminate_instances(instance_ids=[inst.id])
+print "Connections closed"
+
