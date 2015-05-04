@@ -228,11 +228,11 @@ def fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,fil
         penalized_avg = avg*score_inten_penalty
 
         if float(A_1)>=float(B_1) and float(B_1)>=float(C_1) and float(C_1)>0:
-            if int(score)<10: #makes sorting work properly later
+            if int(score)<10: # makes sorting work properly later
                 score = '0'+score  
             output_file += 'score = '+' '+score+' '+"Const = "+str(A_1)+' '+str(B_1)+' '+str(C_1)+' '+"average omc = "+str(avg)+'  '+"avg w/out peaks over edge = "+str(real_avg)+' '+"avg w/ inten penalty = "+str(penalized_avg)+"\n"
 
-            if real_avg <= 0.2: #appends good finds (RMS < 0.2 MHz, ignoring peaks over edge) to interim file for each processor
+            if real_avg <= 0.2: # appends good finds (RMS < 0.2 MHz, ignoring peaks over edge) to interim file for each processor
                 interim_output = 'score = '+' '+score+' '+"Const = "+str(A_1)+' '+str(B_1)+' '+str(C_1)+' '+"average omc = "+str(avg)+'  '+"avg w/out peaks over edge = "+str(real_avg)+' '+"avg w/ inten penalty = "+str(penalized_avg)+"\n"
                 fh_interim_good = open("interim_good_output%s.txt"%(str(file_num)), "a")
                 fh_interim_good.write(interim_output)
@@ -248,7 +248,6 @@ def fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,fil
     #print 'out of %s peaks there were %s peaks that werent in the experimental spectrum'%(regular_counter, error_counter) 
     fh_final.write(output_file)
     fh_final.close()
-    # CHANGELOG 7
     os.system("sort -r 'final_output%s.txt'>sorted_final_out%s.txt"%(str(file_num),str(file_num)))#sorts output by score
     return "sorted_final_out%s.txt"%(str(file_num)) # Return output filename
 
@@ -286,13 +285,16 @@ DK =        jobData[10]
 dJ =        jobData[11]
 dK =        jobData[12]
 
-cmd = 'cp spfit spfit'+str(file_num) # fit_triples uses individually named versions of spfit for some reason 
+cmd = 'cp spfit temp/spfit'+str(file_num) # fit_triples uses individually named versions of spfit for some reason 
 os.system(cmd)
-
+os.chdir('temp/')
 # Outfile will be a string containing the name of the sorted fit triples file.
 outfile = fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peaklist,file_num,A,B,C,DJ,DJK,DK,dJ,dK)
 
 # We don't need the input file anymore
-os.unlink(infile)
-
+os.unlink(infile[5:]) # We changed directories so need to get rid of the /temp prefix
 print "DISTCLIENT OUTPUT %s" % (outfile) 
+# Clean up the rest of the files
+# TODO move everything to temp 
+os.system('rm default* all_combo_list* spfit*')
+
