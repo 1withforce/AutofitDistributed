@@ -293,8 +293,8 @@ outfile = fit_triples(list_a,list_b,list_c,trans_1,trans_2,trans_3,top_17,peakli
 
 # We don't need the input file anymore
 os.unlink(infile[5:]) # We changed directories so need to get rid of the /temp prefix
-print "DISTCLIENT OUTPUT %s" % (outfile) 
+print "DISTCLIENT OUTPUT temp/%s" % (outfile) 
 # Clean up the rest of the files
 # TODO move everything to temp 
-os.system('rm default* all_combo_list* spfit*')
+os.system('rm default* all_combo_list* final_output* spfit*')
 
