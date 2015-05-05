@@ -28,7 +28,7 @@ def get_app_md5(filename):
     md5fh = open(filename + ".md5", 'r')
     md5 = md5fh.readline().strip()
     md5fh.close()
-    print "md5:",md5
+    #print "md5:",md5
     return md5
 
 #APP_MD5 = get_app_md5(APP_NAME)
